@@ -36,9 +36,9 @@ typedef struct
 class RpakAsset
 {
 public:
-	static std::unique_ptr<RpakAsset> processRawAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment);
+	static std::shared_ptr<RpakAsset> processRawAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment);
 
-	virtual std::vector<uint8_t> extract() = 0;
+	virtual void extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outDirectory) = 0;
 
 	virtual ~RpakAsset(){};
 };

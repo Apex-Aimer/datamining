@@ -19,9 +19,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    RpakFile file = RpakFile();
+    RpakFile file = RpakFile(rpakFilePath, std::filesystem::current_path());
 
-    file.parse(rpakFilePath);
+    file.parse();
+
+    file.extractAssets();
 
     return 0;
 }

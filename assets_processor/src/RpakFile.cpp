@@ -6,19 +6,26 @@
 #include "RpakFile.h"
 #include "RpakFileStream.h"
 
-void RpakFile::parse(std::filesystem::path path)
+std::ifstream RpakFile::openStream()
 {
-    // Open the binary file in input mode
-    std::ifstream rpakSource(path, std::fstream::binary);
+    std::ifstream rpakSource(this->rpakFilePath, std::fstream::binary);
 
     if (!rpakSource.is_open())
     {
         std::cerr << "Error code: " << strerror(errno) << std::endl;
 
-        return;
+        throw std::runtime_error(strerror(errno));
     }
 
-    std::cout << "Processing: " << path.filename().string() << std::endl;
+    return rpakSource;
+};
+
+void RpakFile::parse()
+{
+    // Open the binary file in input mode
+    auto rpakSource = this->openStream();
+
+    std::cout << "Processing: " << this->rpakFilePath.filename().string() << std::endl;
 
     // Read the file header into a struct
     RpakApexHeader header;
@@ -86,7 +93,7 @@ void RpakFile::parse(std::filesystem::path path)
 
     for (auto assetEntry : assetsEntry)
     {
-        std::unique_ptr<RpakAsset> asset = RpakAsset::processRawAsset(&assetEntry, &rpakSource, this->segment);
+        std::shared_ptr<RpakAsset> asset = RpakAsset::processRawAsset(&assetEntry, &rpakSource, this->segment);
 
         if (asset == nullptr)
         {
@@ -99,3 +106,16 @@ void RpakFile::parse(std::filesystem::path path)
 
     std::cout << "Processed file" << std::endl;
 };
+
+void RpakFile::extractAssets()
+{
+    std::filesystem::path dir = this->outputPath.parent_path();
+    std::filesystem::path outputDir = dir / "output";
+
+    auto rpakSource = this->openStream();
+
+    for (auto asset : this->assets)
+    {
+        asset->extract(&rpakSource, this->segment, outputDir);
+    }
+}

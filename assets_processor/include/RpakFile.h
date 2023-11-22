@@ -11,10 +11,18 @@
 class RpakFile
 {
 public:
-    void parse(std::filesystem::path path);
+    RpakFile(std::filesystem::path inPath, std::filesystem::path outPath) : rpakFilePath(inPath){};
+
+    void parse();
+    void extractAssets();
 
 private:
-    std::vector<std::unique_ptr<RpakAsset>> assets;
+    std::ifstream openStream();
+
+    std::filesystem::path rpakFilePath;
+    std::filesystem::path outputPath;
+
+    std::vector<std::shared_ptr<RpakAsset>> assets;
     std::shared_ptr<RpakSegment> segment;
 
     uint32_t virtualSegmentsStart;

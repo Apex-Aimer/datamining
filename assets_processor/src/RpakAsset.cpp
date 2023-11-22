@@ -19,13 +19,13 @@ std::string assetMagicToString(RpakApexAssetEntry *assetEntry)
     return resultString;
 }
 
-std::unique_ptr<RpakAsset> RpakAsset::processRawAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment)
+std::shared_ptr<RpakAsset> RpakAsset::processRawAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment)
 {
     // std::cout << "Asset entry magic: " << assetMagicToString(assetEntry) << std::endl;
 
     if (assetEntry->magic == (uint32_t)RpakAssetType::Wrap)
     {
-        return std::make_unique<WrappedAsset>(assetEntry, fileStream, segment);
+        return std::make_shared<WrappedAsset>(assetEntry, fileStream, segment);
     }
 
     return nullptr;

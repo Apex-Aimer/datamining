@@ -1,3 +1,5 @@
+#include <string>
+
 #include "common.h"
 #include "RpakAsset.h"
 
@@ -19,5 +21,19 @@ class WrappedAsset : public RpakAsset
 public:
     WrappedAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment);
 
-    std::vector<uint8_t> extract();
+    void extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outDirectory);
+
+private:
+    std::string name;
+
+    /**
+     * The 5th bit in assetHeader.flags is not set to 1
+     */
+    bool isCanExtract;
+    bool isCompressed;
+
+    int compressedSize;
+    int decompressedSize;
+
+    RPakPtr dataPtr;
 };
