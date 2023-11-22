@@ -12,7 +12,7 @@ void Decompress::processFile(std::string filePath)
 
 	std::string uncompressedFileName = fileName;
 	uncompressedFileName.replace(fileName.find('.'), 1, ".uncompressed.");
-	
+
 	std::filesystem::path pathUncompressed = pathObj.replace_filename(uncompressedFileName);
 
 	std::vector<uint8_t> buffer; // Compressed region.
@@ -71,9 +71,7 @@ void Decompress::processFile(std::string filePath)
 		std::cout << "Calculated size: '" << dsize << "'" << std::endl;
 	}
 
-	std::cout << "before pakbuf" << std::endl;
 	std::vector<uint8_t> pakbuf(rheader->decompressed_size, 0);
-	std::cout << "before decompress" << std::endl;
 
 	params[1] = std::int64_t(pakbuf.data());
 	params[3] = -1LL;

@@ -13,6 +13,7 @@ file(GLOB SOURCES "src/*.cpp")
 
 add_library(decompress_lib STATIC ${SOURCES})
 
+
 # Specify C++17 standard
 target_compile_features(decompress_lib PUBLIC cxx_std_17)
 set_target_properties(decompress_lib PROPERTIES CXX_EXTENSIONS OFF)
