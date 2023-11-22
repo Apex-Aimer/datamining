@@ -1,0 +1,148 @@
+//------------------------------------------------
+//--- 010 Editor v14.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: *.rpak
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+LittleEndian();
+
+typedef struct {
+    DWORD magic;
+    short version;
+    byte flags;
+    byte is_compressed;
+    uint64 created_file_time;
+    uint64 hash;
+
+    uint64 compressed_size;
+    uint64 embedded_starpak_offset;
+    uint64 padding1 <format=hex>;
+    uint64 decompressed_size;
+    uint64 embedded_starpak_size;
+    uint64 padding2;
+    
+    uint16 starpak_ref_size;
+    uint16 opt_starpak_ref_size;
+    uint16 virtual_segment_count;
+    uint16 mem_page_count;
+    
+    uint16 patch_index;
+    uint16 alignment;
+    
+    uint32 descriptor_count;
+    uint32 asset_entry_count;
+    uint32 guid_descriptor_count;
+    uint32 relations_count;
+    
+    // uint32 unk7count; // 4
+    // uint32 unk8count; // 8
+    uint32 unk3[7]; // 7*4 = 24
+} ApexHeader;
+
+ApexHeader header;
+// uint64 unk4;
+
+local int i = header.starpak_ref_size;
+
+struct PATH {
+    string it; 
+};
+
+while (i > 0) {
+    PATH path;
+    
+    // Printf(" %i,%s,%i,%s\n", Strlen(path.it), path.it, i, ConvertString(path.it, CHARSET_ASCII, CHARSET_BALTIC));
+    
+    i -= (Strlen(path.it) + 1);
+}
+
+i = header.opt_starpak_ref_size;
+
+while (i > 0) {
+    PATH path;
+    
+    Printf(" %i,%s,%i,%s\n", Strlen(path.it), path.it, i, ConvertString(path.it, CHARSET_ASCII, CHARSET_BALTIC));
+    
+    i -= (Strlen(path.it) + 1);
+}
+
+typedef struct {
+	uint32 page_idx;
+	uint32 page_offset;
+} RpakDescriptor;
+
+typedef struct {
+	uint32 data_flag;	// Flags (Streamed, Internal...?)
+	uint32 data_type;	// What this data contains...?
+	uint64 data_size;	// The size of the data block... (Sometimes bigger than data in-file, probably also contains streamed shit...)
+} RpakVirtualSegment;
+
+typedef struct {
+	uint32 virtual_segment_index;	// Corrosponds to a data block entry
+	uint32 flags;					// Unknown right now
+	uint32 data_size;				// Total size of the block
+} RpakMemPage;
+
+typedef struct {
+	uint64 name_hash; // 8
+	uint64 padding; // 16
+
+	uint32 sub_header_data_block_index; // "head" // 20
+	uint32 sub_header_data_block_offset; // 24
+	uint32 raw_data_block_index; // "cpu" // 28
+	uint32 raw_data_block_offset; // 32
+
+	uint64 starpak_offset; // 40
+	uint64 optimal_starpak_offset; // 48
+
+	uint16 page_end; // number of the highest page that is used by this asset // 50
+	uint16 un2; // 52
+
+	uint32 relations_start_index; // 56
+
+	uint32 uses_start_index; // 60
+	uint32 relations_count; // 64
+	uint32 uses_count; // 68
+
+	uint32 sub_header_size; // 72
+	uint32 version; // 76
+	char magic[0x4]; // 80
+} RpakApexAssetEntry;
+
+//i = header.virtual_segment_count;
+//while (i > 0) {
+//    RpakVirtualSegment segment;
+//    
+//    i -= 1;
+//}
+RpakVirtualSegment vSeg;
+FSkip(sizeof(RpakVirtualSegment) * (header.virtual_segment_count - 1));
+
+//i = header.mem_page_count;
+//while (i > 0) {
+//    RpakMemPage memPage;
+//    
+//    i -= 1;
+//}
+RpakMemPage memPage;
+FSkip(sizeof(RpakMemPage) * (header.mem_page_count - 1));
+RpakDescriptor descriptor;
+FSkip(sizeof(RpakDescriptor) * (header.descriptor_count - 1));
+
+// uint32 sdfsdf[6];
+
+i = header.asset_entry_count;
+while (i > 0) {
+    RpakApexAssetEntry asset;
+    
+    // Printf("%c%c%c%c\n", asset.magic[0], asset.magic[1], asset.magic[2], asset.magic[3]);
+    
+    i -= 1;
+}
