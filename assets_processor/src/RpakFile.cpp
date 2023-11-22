@@ -109,8 +109,7 @@ void RpakFile::parse()
 
 void RpakFile::extractAssets()
 {
-    std::filesystem::path dir = this->outputPath.parent_path();
-    std::filesystem::path outputDir = dir / "output";
+    std::filesystem::path outputDir = this->outputPath / "output";
 
     auto rpakSource = this->openStream();
 

@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "oodle2.h"
+
 #include "RpakFileStream.h"
 #include "WrappedAsset.h"
 
@@ -47,6 +49,48 @@ WrappedAsset::WrappedAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileSt
     this->dataPtr = assetHeader.data;
 }
 
+uint8_t *decompressOodleData(const uint8_t *data, uint64_t dataSize)
+{
+    int sizeNeeded = OodleLZDecoder_MemorySizeNeeded(OodleLZ_Compressor_Invalid, -1);
+
+    uint8_t *decoder = new uint8_t[sizeNeeded]{};
+    uint8_t *outBuf = new uint8_t[dataSize]{};
+
+    OodleLZDecoder_Create(OodleLZ_Compressor::OodleLZ_Compressor_Invalid, dataSize, decoder, sizeNeeded);
+
+    int decPos = 0;
+    int dataPos = 0;
+
+    OodleLZ_DecodeSome_Out out{};
+    if (!OodleLZDecoder_DecodeSome((OodleLZDecoder *)decoder, &out, outBuf, decPos, dataSize, dataSize - decPos, data + dataPos, dataSize - dataPos, OodleLZ_FuzzSafe_No, OodleLZ_CheckCRC_No, OodleLZ_Verbosity::OodleLZ_Verbosity_None, OodleLZ_Decode_ThreadPhaseAll))
+    {
+        // If it fails it shouldn't be compressed?
+        delete[] decoder;
+        delete[] outBuf;
+
+        return const_cast<uint8_t *>(data);
+    }
+
+    while (true)
+    {
+        decPos += out.decodedCount;
+        dataPos += out.compBufUsed;
+
+        if (out.compBufUsed + out.decodedCount == 0)
+            break;
+
+        if (decPos >= dataSize)
+            break;
+
+        bool decodeResult = OodleLZDecoder_DecodeSome((OodleLZDecoder *)decoder, &out, outBuf, decPos, dataSize, dataSize - decPos, data + dataPos, dataSize - dataPos, OodleLZ_FuzzSafe_No, OodleLZ_CheckCRC_No, OodleLZ_Verbosity::OodleLZ_Verbosity_None, OodleLZ_Decode_ThreadPhaseAll);
+    }
+
+    delete[] decoder;
+    // delete[] data;
+
+    return outBuf;
+}
+
 void WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outputDir)
 {
     std::filesystem::path exportPath = outputDir / this->name;
@@ -66,10 +110,11 @@ void WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegmen
 
     if (!this->isCompressed)
     {
-        std::ofstream ofs(exportPath, std::ios::out | std::ios::binary);
 
         char *buffer = new char[this->decompressedSize];
         fileStream->read(buffer, this->decompressedSize);
+
+        std::ofstream ofs(exportPath, std::ios::out | std::ios::binary);
         ofs.write(buffer, this->decompressedSize);
 
         delete[] buffer;
@@ -78,19 +123,20 @@ void WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegmen
         return;
     }
 
-    // char *compressedBuffer = new char[Header.cmpSize];
-    // Reader.Read(compressedBuffer, 0, Header.cmpSize);
+    char *compressedBuffer = new char[this->compressedSize];
+    fileStream->read(compressedBuffer, this->compressedSize);
     // uint64_t bufferSize = Header.dcmpSize;
 
-    // std::unique_ptr<IO::MemoryStream> stream = RTech::DecompressStreamedBuffer((uint8_t *)compressedBuffer, bufferSize, (uint8_t)CompressionType::OODLE);
+    uint8_t *stream = decompressOodleData((uint8_t *)compressedBuffer, this->decompressedSize);
 
-    // char *decompressedBuffer = new char[Header.dcmpSize];
+    // char *decompressedBuffer = new char[this->decompressedSize];
     // stream->Read((uint8_t *)decompressedBuffer, 0, Header.dcmpSize);
     // stream->Close();
-    // ofs.write(decompressedBuffer, Header.dcmpSize - 1);
+    std::ofstream ofs(exportPath, std::ios::out | std::ios::binary);
+    ofs.write((char *)stream, this->decompressedSize - 1);
 
-    // delete[] decompressedBuffer;
-    // delete[] compressedBuffer;
+    delete[] stream;
+    delete[] compressedBuffer;
 
-    // ofs.close();
+    ofs.close();
 }

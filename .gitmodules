@@ -1,0 +1,3 @@
+[submodule "OodleUE"]
+	path = OodleUE
+	url = git@github.com:WorkingRobot/OodleUE.git

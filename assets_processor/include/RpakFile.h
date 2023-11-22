@@ -11,7 +11,7 @@
 class RpakFile
 {
 public:
-    RpakFile(std::filesystem::path inPath, std::filesystem::path outPath) : rpakFilePath(inPath){};
+    RpakFile(std::filesystem::path inPath, std::filesystem::path outPath) : rpakFilePath(inPath), outputPath(outPath){};
 
     void parse();
     void extractAssets();
