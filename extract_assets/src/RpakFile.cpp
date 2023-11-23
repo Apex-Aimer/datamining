@@ -25,8 +25,6 @@ void RpakFile::parse()
     // Open the binary file in input mode
     auto rpakSource = this->openStream();
 
-    std::cout << "Processing: " << this->rpakFilePath.filename().string() << std::endl;
-
     // Read the file header into a struct
     RpakApexHeader header;
     rpakSource.read(reinterpret_cast<char *>(&header), sizeof(RpakApexHeader));
@@ -103,18 +101,16 @@ void RpakFile::parse()
         this->assets.push_back(std::move(asset));
     }
     // ---- Init assets end ----
-
-    std::cout << "Processed file" << std::endl;
 };
 
 void RpakFile::extractAssets()
 {
-    std::filesystem::path outputDir = this->outputPath / "output";
-
     auto rpakSource = this->openStream();
+
+    std::filesystem::path outDir = this->outputDir / (this->rpakFilePath.filename().string());
 
     for (auto asset : this->assets)
     {
-        asset->extract(&rpakSource, this->segment, outputDir);
+        asset->extract(&rpakSource, this->segment, outDir);
     }
 }

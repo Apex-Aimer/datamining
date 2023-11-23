@@ -91,15 +91,13 @@ uint8_t *decompressOodleData(const uint8_t *data, uint64_t dataSize)
     return outBuf;
 }
 
-void WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outputDir)
+bool WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outputDir)
 {
     std::filesystem::path exportPath = outputDir / this->name;
 
-    std::filesystem::create_directory(outputDir);
-
     if (!this->isCanExtract)
     {
-        return;
+        return false;
     }
 
     fileStream->seekg(
@@ -114,24 +112,30 @@ void WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegmen
         char *buffer = new char[this->decompressedSize];
         fileStream->read(buffer, this->decompressedSize);
 
+        if (!std::filesystem::exists(outputDir))
+        {
+            std::filesystem::create_directory(outputDir);
+        }
+
         std::ofstream ofs(exportPath, std::ios::out | std::ios::binary);
         ofs.write(buffer, this->decompressedSize);
 
         delete[] buffer;
         ofs.close();
 
-        return;
+        return true;
     }
 
     char *compressedBuffer = new char[this->compressedSize];
     fileStream->read(compressedBuffer, this->compressedSize);
-    // uint64_t bufferSize = Header.dcmpSize;
 
     uint8_t *stream = decompressOodleData((uint8_t *)compressedBuffer, this->decompressedSize);
 
-    // char *decompressedBuffer = new char[this->decompressedSize];
-    // stream->Read((uint8_t *)decompressedBuffer, 0, Header.dcmpSize);
-    // stream->Close();
+    if (!std::filesystem::exists(outputDir))
+    {
+        std::filesystem::create_directory(outputDir);
+    }
+
     std::ofstream ofs(exportPath, std::ios::out | std::ios::binary);
     ofs.write((char *)stream, this->decompressedSize - 1);
 
@@ -139,4 +143,6 @@ void WrappedAsset::extract(std::ifstream *fileStream, std::shared_ptr<RpakSegmen
     delete[] compressedBuffer;
 
     ofs.close();
+
+    return true;
 }

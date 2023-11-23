@@ -8,5 +8,5 @@ project(datamining)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
 
 add_subdirectory(decompress)
-add_subdirectory(decompressor)
-add_subdirectory(assets_processor)
+add_subdirectory(extract_assets)
+add_subdirectory(extractor)

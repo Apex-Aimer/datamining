@@ -5,15 +5,10 @@
 
 #include "decompress.h"
 
-void Decompress::processFile(std::string filePath)
+std::filesystem::path Decompress::processFile(std::filesystem::path filePath, std::filesystem::path outputDir)
 {
-	std::filesystem::path pathObj(filePath);
-	std::string fileName = pathObj.filename().string();
-
-	std::string uncompressedFileName = fileName;
-	uncompressedFileName.replace(fileName.find('.'), 1, ".uncompressed.");
-
-	std::filesystem::path pathUncompressed = pathObj.replace_filename(uncompressedFileName);
+	std::string fileName = filePath.filename().string();
+	std::filesystem::path pathUncompressed = outputDir / fileName;
 
 	std::vector<uint8_t> buffer; // Compressed region.
 	std::ifstream inputFile(filePath, std::fstream::binary);
@@ -22,10 +17,8 @@ void Decompress::processFile(std::string filePath)
 	{
 		std::cerr << "Error code: " << strerror(errno) << std::endl;
 
-		return;
+		return "";
 	}
-
-	std::cout << "Processing: " << fileName << std::endl;
 
 	/**
 	 * Seek to the end of the file to determine its size
@@ -45,17 +38,22 @@ void Decompress::processFile(std::string filePath)
 	if (rheader->magic != 'kaPR')
 	{
 		std::cout << "Error: pak file '" << fileName << "' has invalid magic!" << std::endl;
-		return;
+		return "";
 	}
 	if (!rheader->is_compressed)
 	{
 		std::cout << "Error: pak file '" << fileName << "' already decompressed!" << std::endl;
-		return;
+		return "";
 	}
 	if (rheader->compressed_size != buffer.size())
 	{
 		std::cout << "Error: pak file '" << fileName << "' decompressed size '" << buffer.size() << "'!" << std::endl;
-		return;
+		return "";
+	}
+	// TODO: patching
+	if (rheader->patch_index > 0)
+	{
+		return "";
 	}
 
 	std::int64_t params[18];
@@ -64,7 +62,7 @@ void Decompress::processFile(std::string filePath)
 	if (dsize == rheader->compressed_size)
 	{
 		std::cout << "Error: calculated size: '" << dsize << "' expected: '" << rheader->decompressed_size << "'!" << std::endl;
-		return;
+		return "";
 	}
 	else
 	{
@@ -81,7 +79,7 @@ void Decompress::processFile(std::string filePath)
 	if (decomp_result != 1)
 	{
 		std::cout << "Error: decompression failed for '" << fileName << "' return value: '" << +decomp_result << "'" << std::endl;
-		return;
+		return "";
 	}
 	else
 	{
@@ -96,4 +94,6 @@ void Decompress::processFile(std::string filePath)
 
 	out_block.write((char *)pakbuf.data(), rheader->decompressed_size);
 	out_header.write((char *)rheader, sizeof(RpakApexHeader));
+
+	return pathUncompressed;
 }

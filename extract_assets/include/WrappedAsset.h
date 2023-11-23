@@ -1,6 +1,6 @@
 #include <string>
+#include <common.h>
 
-#include "common.h"
 #include "RpakAsset.h"
 
 struct WrapAssetHeader_v7
@@ -21,7 +21,7 @@ class WrappedAsset : public RpakAsset
 public:
     WrappedAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment);
 
-    void extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outDirectory);
+    bool extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outDirectory);
 
 private:
     std::string name;

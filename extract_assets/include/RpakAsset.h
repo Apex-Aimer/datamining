@@ -38,7 +38,7 @@ class RpakAsset
 public:
 	static std::shared_ptr<RpakAsset> processRawAsset(RpakApexAssetEntry *assetEntry, std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment);
 
-	virtual void extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outDirectory) = 0;
+	virtual bool extract(std::ifstream *fileStream, std::shared_ptr<RpakSegment> segment, std::filesystem::path outDirectory) = 0;
 
 	virtual ~RpakAsset(){};
 };

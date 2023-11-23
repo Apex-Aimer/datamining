@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <vector>
 
-#include "common.h"
+#include <common.h>
 
 #include "RpakAsset.h"
 #include "RpakSegment.h"
@@ -11,7 +11,7 @@
 class RpakFile
 {
 public:
-    RpakFile(std::filesystem::path inPath, std::filesystem::path outPath) : rpakFilePath(inPath), outputPath(outPath){};
+    RpakFile(std::filesystem::path inPath, std::filesystem::path outDir) : rpakFilePath(inPath), outputDir(outDir){};
 
     void parse();
     void extractAssets();
@@ -20,7 +20,7 @@ private:
     std::ifstream openStream();
 
     std::filesystem::path rpakFilePath;
-    std::filesystem::path outputPath;
+    std::filesystem::path outputDir;
 
     std::vector<std::shared_ptr<RpakAsset>> assets;
     std::shared_ptr<RpakSegment> segment;
