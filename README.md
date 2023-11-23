@@ -1,6 +1,6 @@
 # datamining
 
-A tool to extract assets from Apex Legend `rpak` files (thanks to LegionPlus, r5apexsdk and RePak).
+A tool to extract assets from Apex Legend `rpak` files.
 
 Thanks to:
 
